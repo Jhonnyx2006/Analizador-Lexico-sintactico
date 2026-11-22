@@ -1,0 +1,14 @@
+El programa ejemplo que se nos dio en el Entregable "Analizador Lexico" no es compatible con la gramartica proposionada 
+para el analizador lexico-sintactico
+
+ya que -> el programa inicia con : Inicio
+en lugar de con                  : Programa id inicio
+
+ademas contienen "/" en :   numero = multiple / 123.99;
+y tambien  "–" en : multiple = 56 + (numero – 34.75);
+
+y estos no son parte de la gramatica (no confundir - con – , uno es ligeramrnte mas largo)
+
+"/" fue cambiado por * 
+"–" fue cambiado por -
+"Inicio" fue cambiado por Programa demo Inicio  
