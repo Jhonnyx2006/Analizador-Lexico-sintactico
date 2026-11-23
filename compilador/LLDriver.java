@@ -40,16 +40,16 @@ public class LLDriver {
 
         while (!pila.estaVacia()) {
             int x = pila.top();
-            System.out.printf("%n[SINT] Pila (cima a la izquierda): %s%n", pila);
-            System.out.printf("[SINT] x = %s (%d) | a = %d, nombre propio '%s'%n",
-                    Gramatica.nombreSimbolo(x), x, a, token.getNombrePropio());
+            // System.out.printf("%n[SINT] Pila (cima a la izquierda): %s%n", pila);
+            // System.out.printf("[SINT] x = %s (%d) | a = %d, nombre propio '%s'%n",
+            //         Gramatica.nombreSimbolo(x), x, a, token.getNombrePropio());
 
             if (Gramatica.esNoTerminalNum(x)) {
                 int prod = MatrizPredictiva.consultar(x, a);
 
                 if (prod != 0) {
-                    System.out.printf("[SINT] %s es no terminal: Predict[%s,%d] = %d -> %s%n",
-                            Gramatica.nombreSimbolo(x), Gramatica.nombreSimbolo(x), a, prod, Gramatica.gramatica[prod - 1]);
+                    // System.out.printf("[SINT] %s es no terminal: Predict[%s,%d] = %d -> %s%n",
+                            // Gramatica.nombreSimbolo(x), Gramatica.nombreSimbolo(x), a, prod, Gramatica.gramatica[prod - 1]);
 
                     pila.pop();                                                    // Pop() de x
                     for (int i = Gramatica.cantSimbolosDer[prod - 1] - 1; i >= 0; i--) {
@@ -63,8 +63,8 @@ public class LLDriver {
                 }
             } else {
                 if (x == a) {
-                    System.out.printf("[SINT] %d es terminal y coincide con la entrada ('%s'): Pop() y pido el siguiente token%n",
-                            x, token.getNombrePropio());
+                    // System.out.printf("[SINT] %d es terminal y coincide con la entrada ('%s'): Pop() y pido el siguiente token%n",
+                            // x, token.getNombrePropio());
                     pila.pop();
                     // AQUI (fase semantica): 'token' acaba de ser aceptado (nombre propio, clasificacion, linea, columna)
                     a = scanner();
@@ -77,23 +77,23 @@ public class LLDriver {
 
         // La pila quedo vacia: solo es valido si tambien se acabo la entrada
         if (a != ClasificacionLexica.FIN_ARCHIVO) {
-            System.out.printf("%n[SINT] ERROR (L%d:C%d): el programa ya termino pero sobra '%s'%n",
-                    token.getLinea(), token.getColumna(), token.getNombrePropio());
+            // System.out.printf("%n[SINT] ERROR (L%d:C%d): el programa ya termino pero sobra '%s'%n",
+                    // token.getLinea(), token.getColumna(), token.getNombrePropio());
             return false;
         }
 
-        System.out.println("\n[SINT] Pila vacia y entrada terminada: el programa es sintacticamente correcto.");
+        // System.out.println("\n[SINT] Pila vacia y entrada terminada: el programa es sintacticamente correcto.");
         return true;
     }
 
     private void errorTerminal(int esperado) {
-        System.out.printf("%n[SINT] ERROR DE SINTAXIS (L%d:C%d): se esperaba '%s' (%d) y se encontro %s (%d)%n",
-                token.getLinea(), token.getColumna(), Gramatica.nombreSimbolo(esperado), esperado, descripcionToken(), a);
+     //   System.out.printf("%n[SINT] ERROR DE SINTAXIS (L%d:C%d): se esperaba '%s' (%d) y se encontro %s (%d)%n",
+                // token.getLinea(), token.getColumna(), Gramatica.nombreSimbolo(esperado), esperado, descripcionToken(), a);
     }
 
     private void errorNoTerminal(int x) {
-        System.out.printf("%n[SINT] ERROR DE SINTAXIS (L%d:C%d): se encontro %s (%d) y no hay produccion para %s con ese token.%n",
-                token.getLinea(), token.getColumna(), descripcionToken(), a, Gramatica.nombreSimbolo(x));
+     //   System.out.printf("%n[SINT] ERROR DE SINTAXIS (L%d:C%d): se encontro %s (%d) y no hay produccion para %s con ese token.%n",
+                // token.getLinea(), token.getColumna(), descripcionToken(), a, Gramatica.nombreSimbolo(x));
 
         // Los terminales que si se aceptarian aqui son las columnas con algo distinto de 0 en la fila de x
         int fila = x - Gramatica.BASE_NO_TERMINAL;
@@ -103,7 +103,7 @@ public class LLDriver {
                 esperados += " " + MatrizPredictiva.nombreColumna(c);
             }
         }
-        System.out.println("[SINT] En este punto se esperaba alguno de:" + esperados);
+      //  System.out.println("[SINT] En este punto se esperaba alguno de:" + esperados);
     }
 
     private String descripcionToken() {

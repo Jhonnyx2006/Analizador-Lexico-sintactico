@@ -20,6 +20,7 @@ public class Compilador {
         // ---- FASE 0: tablas del analizador sintactico (se construyen una sola vez) ----
         try {
             Gramatica.cargar(rutaGramatica);
+            Gramatica.imprimirResultados();
         } catch (IOException e) {
             System.err.println("No se pudo leer la gramatica '" + rutaGramatica + "': " + e.getMessage());
             return;
@@ -44,9 +45,9 @@ public class Compilador {
         AnalizadorLexico lexico = new AnalizadorLexico(codigo);
         LLDriver parser = new LLDriver(lexico);
 
-        System.out.println("\n_____ TRAZA DE EJECUCION (lexico + sintactico) _____");
+        // System.out.println("\n_____ TRAZA DE EJECUCION (lexico + sintactico) _____");
         boolean correcto = parser.analizar();
-        System.out.println("\n_____ FIN DE LA TRAZA _____\n");
+        // System.out.println("\n_____ FIN DE LA TRAZA _____\n");
 
           ///lexico.imprimir();   // tokens entregados, tabla de simbolos y errores lexicos
 
