@@ -1,27 +1,29 @@
 package compilador;
 
-/**
- * Pila de simbolos lo mas simple posible: un arreglo de tamano fijo y un contador.
- * datos[tope - 1] es la cima.
- */
+import java.util.EmptyStackException;
+
+//tope - 1 es la cima 
+//tambien cambiamos de lista enlazada  a arreglo String y entero tope 
 public class Pila {
 
-    private static final int CAPACIDAD = 1000;   // sobra: la pila solo crece con el anidamiento del programa
-
-    private final String[] datos = new String[CAPACIDAD];
+  
+    private  String[] datos = new String[2];
     private int tope = 0;                         // cuantos elementos hay guardados
 
     public void push(String simbolo) {
-        if (tope == CAPACIDAD) {
-            throw new IllegalStateException("Pila llena");
+         if (tope == datos.length) {
+            String[] nuevo = new String[datos.length * 2];
+            System.arraycopy(datos, 0, nuevo, 0, tope);
+            datos = nuevo; //cambiamos la referencia
         }
+     
         datos[tope] = simbolo;
         tope++;
     }
 
     public String pop() {
         if (tope == 0) {
-            throw new IllegalStateException("Pila vacia");
+            throw new EmptyStackException();
         }
         tope--;
         return datos[tope];
@@ -29,7 +31,7 @@ public class Pila {
 
     public String top() {
         if (tope == 0) {
-            throw new IllegalStateException("Pila vacia");
+            throw new EmptyStackException();
         }
         return datos[tope - 1];
     }

@@ -6,9 +6,9 @@ package compilador;
  *   Push(S)
  *   x = cima de la pila, a = token de entrada
  *   mientras la pila no este vacia:
- *       si x es no terminal:  si Predict[x,a] != 0 -> Pop() y Push() de la produccion al reves
+ *       si x es N:  si Predict[x,a] != 0 -> Pop() y Push() de la produccion al reves
  *                             si no -> error de sintaxis
- *       si x es terminal:     si x == a -> Pop() y a = scanner()
+ *       si x es T:     si x == a -> Pop() y a = scanner()
  *                             si no -> error de sintaxis
  */
 public class LLDriver {
@@ -24,6 +24,7 @@ public class LLDriver {
     }
 
     /** scanner(): pide UN token al analizador lexico y lo convierte en un terminal de la gramatica. */
+    // no podemos pedirle al analizador sintactico que procese el nombre del Id , por ejemplo "multiple" , lo tiene que pasar a se un no terminal id
     private String scanner() {
         token = lexico.siguienteToken();
 
@@ -41,8 +42,8 @@ public class LLDriver {
         pila.push(Gramatica.SIMBOLO_INICIAL);       // Push(S)
         a = scanner();
 
-        while (!pila.estaVacia()) {
-            String x = pila.top();
+        while (!pila.estaVacia()) { //Begin
+            String x = pila.top(); 
             System.out.printf("%n[SINT] Pila (cima a la izquierda): %s%n", pila);
             System.out.printf("[SINT] x = %s | a = %s (token '%s')%n", x, a, token.getNombrePropio());
 
@@ -95,7 +96,7 @@ public class LLDriver {
         System.out.printf("%n[SINT] ERROR DE SINTAXIS (L%d:C%d): se encontro %s y no hay produccion para %s con ese token.%n",
                 token.getLinea(), token.getColumna(), descripcionToken(), x);
 
-        // Los terminales que si se aceptarian aqui son las columnas con algo distinto de 0 en la fila de x
+        // Los terminales que si se aceptarian aqui las que nos indique la matriz 
         int fila = Gramatica.indiceNoTerminal(x);
         String esperados = "";
         for (int c = 0; c <= Gramatica.totalTerminales; c++) {

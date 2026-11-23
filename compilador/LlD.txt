@@ -1,0 +1,22 @@
+Procedure LIDriver
+    Begin
+        Push (s) -- poner el símbolo inicial en la pila vacía
+            -- asigne a x el símbolo en la parte alta de la pila
+            -- asigne a a el token de entrada
+        while not stack empty loop
+        If x in noterminals Then
+            If Predict[x‚a] != 0
+            Replace x With Production[ Predict[x,a]]
+                    - Un Pop() y un ciclo de Push()
+            Else
+                    -- Procesa error de sintaxis
+            Endif
+            Else    
+                If x == a Then
+                Pop();
+                a = scanner()
+                    Else
+            -- procesa error de sintaxis
+                Endif
+        Endif
+    End While
