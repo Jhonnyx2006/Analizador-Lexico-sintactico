@@ -23,10 +23,11 @@ public class LLDriver {
     private int a;                          // clasificacion lexica del token actual
 
     public LLDriver(AnalizadorLexico lexico) {
-        this.lexico = lexico;
+        this.lexico = lexico; //injeccion de dependencias 
     }
 
     /** scanner(): pide UN token al analizador lexico y regresa su clasificacion lexica (entero). */
+    //si nos mandan un nombre de Id no podemos poner su nobre propcio 
     private int scanner() {
         token = lexico.siguienteToken();
         return token.getClasificacion();
@@ -53,7 +54,8 @@ public class LLDriver {
                     pila.pop();                                                    // Pop() de x
                     for (int i = Gramatica.cantSimbolosDer[prod - 1] - 1; i >= 0; i--) {
                         pila.push(Gramatica.simbolosDerNum[prod - 1][i]);          // Push() del lado derecho, de derecha a izquierda
-                    }
+                    } ///Replace x With Production[ Predict[x,a] ] - Un Pop() y un ciclo de Push()
+                    //hacemos un push inverso para leer el mas a la izquierda
                     // AQUI (fase semantica): se aplico la produccion 'prod'
                 } else {
                     errorNoTerminal(x);

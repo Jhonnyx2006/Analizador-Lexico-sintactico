@@ -41,10 +41,10 @@ public final class ClasificacionLexica {
         "Programa", "Real", "Entero", "Leer", "Escribir", "Entonces", "Si", "Sino", "Inicio", "Fin"
     };
     private static final int[] CODIGOS_PALABRAS = {
-        PR_PROGRAMA, PR_REAL, PR_ENTERO, PR_LEER, PR_ESCRIBIR, PR_ENTONCES, PR_SI, PR_SINO, PR_INICIO, PR_FIN
+        PR_PROGRAMA, PR_REAL, PR_ENTERO, PR_LEER, PR_ESCRIBIR, PR_ENTONCES, PR_SI, PR_SINO, PR_INICIO, PR_FIN,
     };
 
-    // Nombres para las trazas; el de la clasificacion c esta en NOMBRES[c - 256]
+    // Nombres para las trazas: el de la clasificacion c esta en NOMBRES[c - 256]
     private static final String[] NOMBRES = {
         "IDENTIFICADOR", "LITERAL_ENTERA", "LITERAL_REAL", "OP_IGUAL_IGUAL", "OP_DISTINTO",
         "PR_PROGRAMA", "PR_REAL", "PR_ENTERO", "PR_LEER", "PR_ESCRIBIR",

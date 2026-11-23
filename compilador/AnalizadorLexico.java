@@ -45,7 +45,7 @@ public class AnalizadorLexico {
     }
 
     // CAMBIO: antes analizar() recorria todo el texto de una vez. Ahora el trabajo esta en siguienteToken(),
-    // que forma UN token y regresa; analizar() solo lo llama hasta llegar al fin del archivo.
+    // que forma UN token y regresa analizar() solo lo llama hasta llegar al fin del archivo.
     public void analizar() {
         Token t;
         do {
@@ -402,6 +402,6 @@ public class AnalizadorLexico {
         } //%d entero decimal
     }
 
-    // CAMBIO: el enum ClasificacionLexica desaparecio. Las clasificaciones son enteros y estan en
+
     // ClasificacionLexica.java (0 = fin de archivo, 1..255 = ASCII del caracter unico, 256+ = demas lexemas)
 }

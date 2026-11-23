@@ -41,7 +41,7 @@ public class Gramatica {
     // NUEVO: los simbolos como numeros enteros, como los usa un analizador sintactico real.
     //   terminal      -> su clasificacion lexica (0 = $, 1..255 = ASCII, 256+ = identificador, numeros, palabras reservadas...)
     //   no terminal   -> BASE_NO_TERMINAL + su indice en noTerminales[]
-    static final int BASE_NO_TERMINAL = 1000;
+    static final int BASE_NO_TERMINAL = 1000; //es para dividir los terminales y no terminales en el arreglo 
     static int[] codigoTerminal = new int[MAX_TERMINALES];                         // clasificacion lexica de terminales[i]
     static int[] columnaPorCodigo = new int[ClasificacionLexica.MAX_CODIGO + 1];   // clasificacion lexica -> columna de la matriz (-1 = no existe)
     static int[][] simbolosDerNum = new int[NUM_PRODUCCIONES][MAX_SIMBOLOS_POR_LADO];   // lado derecho de cada produccion en numeros
@@ -51,7 +51,7 @@ public class Gramatica {
     static int totalTerminales = 0;
 
     public static void main(String[] args) {
-        String ruta = (args.length > 0) ? args[0] : "gramatica.txt";
+        String ruta = "gramatica.txt";
 
         try {
             cargar(ruta);
@@ -87,9 +87,7 @@ public class Gramatica {
                 if (linea.indexOf(FLECHA) < 0) {
                     throw new IOException("Linea sin '" + FLECHA + "': " + linea);
                 }
-                if (n == NUM_PRODUCCIONES) {
-                    throw new IOException("El archivo tiene mas de " + NUM_PRODUCCIONES + " producciones.");
-                }
+             
                 gramatica[n] = linea;
                 n++;
             }

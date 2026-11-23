@@ -15,7 +15,7 @@ public class Compilador {
 
     public static void main(String[] args) {
         String rutaGramatica = "gramatica.txt";
-        String rutaPrograma = (args.length > 0) ? args[0] : "programaEjemplo.txt";
+        String rutaPrograma = "programaEjemplo.txt";
 
         // ---- FASE 0: tablas del analizador sintactico (se construyen una sola vez) ----
         try {
@@ -48,7 +48,7 @@ public class Compilador {
         boolean correcto = parser.analizar();
         System.out.println("\n_____ FIN DE LA TRAZA _____\n");
 
-        lexico.imprimir();   // tokens entregados, tabla de simbolos y errores lexicos
+          ///lexico.imprimir();   // tokens entregados, tabla de simbolos y errores lexicos
 
         System.out.println("\nResultado: " + (correcto ? "ANALISIS CORRECTO" : "SE ENCONTRARON ERRORES"));
     }
