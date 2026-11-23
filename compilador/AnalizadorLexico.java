@@ -15,9 +15,7 @@ public class AnalizadorLexico {
 
 
   
-    private static final List<String> PALABRAS_RESERVADAS = Arrays.asList(
-        "Programa", "Real", "Entero", "Leer", "Escribir", "Entonces", "Si", "Sino", "Inicio", "Fin"
-    );
+    // CAMBIO: la tabla de palabras reservadas (texto -> clasificacion lexica entera) esta en ClasificacionLexica
     private static final List<Character> CARACTERES_SIMPLES = Arrays.asList(
         ';', '=', '+', '-', '/', '(', ')', ',', '<', '>', '*'
     );
@@ -52,7 +50,7 @@ public class AnalizadorLexico {
         Token t;
         do {
             t = siguienteToken();
-        } while (t.getAtributo() != ClasificacionLexica.finDeArchivo);
+        } while (t.getClasificacion() != ClasificacionLexica.FIN_ARCHIVO);
     }
 
     // CAMBIO: es el "scanner()" que llama el analizador sintactico cada vez que necesita un token.
@@ -96,7 +94,7 @@ public class AnalizadorLexico {
             }
         }
         System.out.println("[FIN] Ya no quedan caracteres por leer.");
-        return new Token(ClasificacionLexica.finDeArchivo, "$", linea, columna);
+        return new Token(ClasificacionLexica.FIN_ARCHIVO, "$", linea, columna);
     }
 
     private void analizarIdentificadorOPalabraReservada() {
@@ -116,9 +114,12 @@ public class AnalizadorLexico {
         trazarFinLexema();
         System.out.printf("    Lexema completo formado: \"%s\" (empieza en L%d:C%d)%n", lexema, l, col);
 
-        if (PALABRAS_RESERVADAS.contains(lexema)) {
-            System.out.printf("    \"%s\" esta en el conjunto de palabras reservadas -> es una PALABRA RESERVADA%n", lexema);
-            agregarToken(new Token(ClasificacionLexica.palabrasReservadas, lexema, l, col));
+        // CAMBIO: se busca en la tabla de palabras reservadas y se obtiene su clasificacion lexica (un entero)
+        int clasificacionPR = ClasificacionLexica.codigoPalabraReservada(lexema);
+        if (clasificacionPR != ClasificacionLexica.NO_RESERVADA) {
+            System.out.printf("    \"%s\" esta en la tabla de palabras reservadas -> es una PALABRA RESERVADA, clasificacion lexica %d (%s)%n",
+                    lexema, clasificacionPR, ClasificacionLexica.nombre(clasificacionPR));
+            agregarToken(new Token(clasificacionPR, lexema, l, col));
             return;
         }
         System.out.printf("    \"%s\" no es palabra reservada, reviso si cumple las reglas de un identificador:%n", lexema);
@@ -128,12 +129,11 @@ public class AnalizadorLexico {
             agregarError("Identificador invalido: '" + lexema + "'", l, col);
             return;
         }
-        System.out.printf("    \"%s\" cumple todas las reglas -> es un IDENTIFICADOR%n", lexema);
+        System.out.printf("    \"%s\" cumple todas las reglas -> es un IDENTIFICADOR, clasificacion lexica %d%n",
+                lexema, ClasificacionLexica.IDENTIFICADOR);
 
-        ClasificacionLexica tipo = PALABRAS_RESERVADAS.contains(lexema)
-                ? ClasificacionLexica.palabrasReservadas
-                : ClasificacionLexica.identificadores;
-        agregarToken(new Token(tipo, lexema, l, col)); //aqui pregunta si el lexema es parte del enum si es lo deja en palabras reservadas si no en identificadores
+        // si no estaba en la tabla de palabras reservadas y cumple las reglas, es un identificador
+        agregarToken(new Token(ClasificacionLexica.IDENTIFICADOR, lexema, l, col));
     }
 
 
@@ -143,7 +143,8 @@ public class AnalizadorLexico {
             return false;
         }
 
-        //En el analizador enviado se leia la ultima parte del identificador de una sola vez (lo cual un compilador no puede hacer) ahora se recorre de izquierda a derecha, un caracter a la vez,
+        // CAMBIO: antes se hacia s.charAt(s.length() - 1) para ir directo al ultimo caracter, lo cual un
+        // analizador real no puede hacer. Ahora se recorre de izquierda a derecha, un caracter a la vez,
         // y solo se recuerdan tres cosas: el primero, el ultimo leido hasta el momento y si todos fueron validos.
         char primero = ' ';
         char ultimo  = ' ';
@@ -239,20 +240,22 @@ public class AnalizadorLexico {
             return; //esto es para que termine la funcion
         }
 
-        System.out.printf("    \"%s\" es un numero %s -> es un %s%n", lexema,
-                esFlotante ? "con punto decimal" : "sin punto decimal",
-                esFlotante ? "FLOTANTE" : "ENTERO");
+        int clasificacion = esFlotante
+                ? ClasificacionLexica.LITERAL_REAL
+                : ClasificacionLexica.LITERAL_ENTERA;
 
-        ClasificacionLexica tipo = esFlotante
-                ? ClasificacionLexica.flotante
-                : ClasificacionLexica.enteros;
-        agregarToken(new Token(tipo, lexema, l, col));
+        System.out.printf("    \"%s\" es un numero %s -> es un %s, clasificacion lexica %d%n", lexema,
+                esFlotante ? "con punto decimal" : "sin punto decimal",
+                esFlotante ? "FLOTANTE" : "ENTERO", clasificacion);
+
+        agregarToken(new Token(clasificacion, lexema, l, col));
     }
 
     private void analizarCaracterSimple() {
         int l = linea, col = columna;
         char c = texto.charAt(posicion);
         String lexema = "" + c;
+        int clasificacion = c;   // CAMBIO: la clasificacion lexica de un caracter unico es su codigo ASCII
         avanzar();
 
         // foorma un operador de dos caracteres? (== o <>)
@@ -263,10 +266,12 @@ public class AnalizadorLexico {
             if (c == '=' && siguiente == '=') {
                 System.out.println("    '=' seguido de '=' -> es el operador \"==\"");
                 lexema = "==";
+                clasificacion = ClasificacionLexica.OP_IGUAL_IGUAL;
                 avanzar();
             } else if (c == '<' && siguiente == '>') {
                 System.out.println("    '<' seguido de '>' -> es el operador \"<>\"");
                 lexema = "<>";
+                clasificacion = ClasificacionLexica.OP_DISTINTO;
                 avanzar();
             } else {
                 System.out.printf("    No forma operador doble -> el token es solo \"%s\"%n", lexema);
@@ -275,7 +280,14 @@ public class AnalizadorLexico {
             System.out.printf("    Ya no hay mas caracteres -> el token es solo \"%s\"%n", lexema);
         }
 
-        agregarToken(new Token(ClasificacionLexica.caracteresSimples, lexema, l, col));
+        if (lexema.length() == 1) {
+            System.out.printf("    Es un caracter unico -> su clasificacion lexica es su codigo ASCII: %d%n", clasificacion);
+        } else {
+            System.out.printf("    Es un operador de dos caracteres -> clasificacion lexica %d (%s)%n",
+                    clasificacion, ClasificacionLexica.nombre(clasificacion));
+        }
+
+        agregarToken(new Token(clasificacion, lexema, l, col));
     }
 
     private void reportarError(char c) {
@@ -288,7 +300,7 @@ public class AnalizadorLexico {
     private void agregarToken(Token t) {
         System.out.printf("    >>> TOKEN generado: %s%n", t);
         tokens.add(t);
-        if (t.getAtributo() == ClasificacionLexica.identificadores) {
+        if (t.getClasificacion() == ClasificacionLexica.IDENTIFICADOR) {
             if (estaEnTablaSimbolos(t.getNombrePropio())) {
                 System.out.printf("    >>> '%s' ya estaba en la tabla de simbolos, no se vuelve a insertar%n", t.getNombrePropio());
             } else {
@@ -355,28 +367,29 @@ public class AnalizadorLexico {
 
         System.out.println("\n___ TABLA DE SIMBOLOS _____");
         if (tablaSimbolos.isEmpty()) System.out.println("  (vacia)");
-        else for (Token s : tablaSimbolos) System.out.printf("  %-15s -> %s%n", s.getNombrePropio(), s.getAtributo());
-        //%-15s imprime el primer string y deja 15 espacios en blanco, %s imprime el segundo string, %n salto de linea
+        else for (Token s : tablaSimbolos) System.out.printf("  %-15s -> %d (%s)%n", s.getNombrePropio(), s.getClasificacion(), ClasificacionLexica.nombre(s.getClasificacion()));
+        //%-15s imprime el nombre propio y deja 15 espacios en blanco, %d imprime la clasificacion lexica (entero), %s su nombre, %n salto de linea
         System.out.println("\n____ ERRORES ____");
         if (errores.isEmpty()) System.out.println("  (ninguno)");
         else errores.forEach(e -> System.out.println("  " + e));
     }
 
     public static class Token {
-        private final ClasificacionLexica atributo;
+        // CAMBIO: un token es el par (clasificacion lexica entera, nombre propio del lexema) + su posicion
+        private final int clasificacion;
         private final String nombrePropio;
         private final int linea, columna;
 
-        public Token(ClasificacionLexica a, String n, int l, int c) {
-            atributo = a; nombrePropio = n; linea = l; columna = c;
+        public Token(int clasificacion, String n, int l, int c) {
+            this.clasificacion = clasificacion; nombrePropio = n; linea = l; columna = c;
         }
-        public ClasificacionLexica getAtributo() { return atributo; }
-        public String getNombrePropio()          { return nombrePropio; }
-        public int getLinea()                    { return linea; }
-        public int getColumna()                  { return columna; }
+        public int getClasificacion()   { return clasificacion; }
+        public String getNombrePropio() { return nombrePropio; }
+        public int getLinea()           { return linea; }
+        public int getColumna()         { return columna; }
 
         @Override public String toString() {
-            return String.format("[%-20s] '%s'  (L%d:C%d)", atributo, nombrePropio, linea, columna);
+            return String.format("[%3d %-14s] '%s'  (L%d:C%d)", clasificacion, ClasificacionLexica.nombre(clasificacion), nombrePropio, linea, columna);
         } //formatea el texto
     }
 
@@ -389,8 +402,6 @@ public class AnalizadorLexico {
         } //%d entero decimal
     }
 
-    // CAMBIO: se agrega finDeArchivo, el token que se entrega cuando ya no queda texto (en la gramatica es '$')
-    public enum ClasificacionLexica {
-        identificadores, enteros, flotante, caracteresSimples, palabrasReservadas, finDeArchivo
-    }
+    // CAMBIO: el enum ClasificacionLexica desaparecio. Las clasificaciones son enteros y estan en
+    // ClasificacionLexica.java (0 = fin de archivo, 1..255 = ASCII del caracter unico, 256+ = demas lexemas)
 }

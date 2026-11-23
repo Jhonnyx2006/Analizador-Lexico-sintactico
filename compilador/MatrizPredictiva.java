@@ -47,11 +47,16 @@ public class MatrizPredictiva {
         predict[fila][columna] = produccion;
     }
 
-    /** Predict[x, a]: numero de produccion o 0. Regresa 0 si x o a no existen en la gramatica. */
-    static int consultar(String noTerminal, String terminal) {
-        int fila = Gramatica.indiceNoTerminal(noTerminal);
-        int columna = columnaDe(terminal);
-        if (fila < 0 || columna < 0) {
+    /**
+     * Predict[x, a]: numero de produccion o 0.
+     *   x = numero del no terminal (Gramatica.BASE_NO_TERMINAL + indice)
+     *   a = clasificacion lexica del token (la que entrega el analizador lexico)
+     * Regresa 0 si el token no pertenece a la gramatica (ej. '/').
+     */
+    static int consultar(int noTerminal, int clasificacionLexica) {
+        int fila = noTerminal - Gramatica.BASE_NO_TERMINAL;
+        int columna = Gramatica.columnaDeCodigo(clasificacionLexica);
+        if (fila < 0 || fila >= Gramatica.totalNoTerminales || columna < 0) {
             return 0;
         }
         return predict[fila][columna];
@@ -78,7 +83,8 @@ public class MatrizPredictiva {
         System.out.println("\n=== MATRIZ PREDICTIVA ('.' = error) ===");
         System.out.print("Columnas: ");
         for (int c = 0; c < columnas; c++) {
-            System.out.print((c + 1) + "=" + nombreColumna(c) + "  ");
+            int codigo = (c == Gramatica.totalTerminales) ? ClasificacionLexica.FIN_ARCHIVO : Gramatica.codigoTerminal[c];
+            System.out.print((c + 1) + "=" + nombreColumna(c) + "(" + codigo + ")  ");
         }
         System.out.println();
 

@@ -38,6 +38,14 @@ public class Gramatica {
     static String[][] simbolosDer = new String[NUM_PRODUCCIONES][MAX_SIMBOLOS_POR_LADO];
     static int[] cantSimbolosDer = new int[NUM_PRODUCCIONES];
 
+    // NUEVO: los simbolos como numeros enteros, como los usa un analizador sintactico real.
+    //   terminal      -> su clasificacion lexica (0 = $, 1..255 = ASCII, 256+ = identificador, numeros, palabras reservadas...)
+    //   no terminal   -> BASE_NO_TERMINAL + su indice en noTerminales[]
+    static final int BASE_NO_TERMINAL = 1000;
+    static int[] codigoTerminal = new int[MAX_TERMINALES];                         // clasificacion lexica de terminales[i]
+    static int[] columnaPorCodigo = new int[ClasificacionLexica.MAX_CODIGO + 1];   // clasificacion lexica -> columna de la matriz (-1 = no existe)
+    static int[][] simbolosDerNum = new int[NUM_PRODUCCIONES][MAX_SIMBOLOS_POR_LADO];   // lado derecho de cada produccion en numeros
+
     // Cuantas posiciones estan realmente ocupadas en cada arreglo
     static int totalNoTerminales = 0;
     static int totalTerminales = 0;
@@ -62,6 +70,7 @@ public class Gramatica {
         extraerNoTerminales();
         extraerTerminales();
         extraerSimbolosPorProduccion();
+        numerarSimbolos();                // NUEVO
     }
 
     static void leerGramatica(String ruta) throws IOException {
@@ -170,6 +179,67 @@ public class Gramatica {
         }
     }
 
+    /**
+     * NUEVO: convierte los simbolos (texto) en numeros, una sola vez, al cargar la gramatica.
+     * Despues de esto el analizador sintactico ya no compara textos: compara enteros.
+     */
+    static void numerarSimbolos() {
+        for (int c = 0; c < columnaPorCodigo.length; c++) {
+            columnaPorCodigo[c] = -1;
+        }
+
+        for (int i = 0; i < totalTerminales; i++) {
+            codigoTerminal[i] = ClasificacionLexica.codigoDeTerminal(terminales[i]);
+            columnaPorCodigo[codigoTerminal[i]] = i;
+        }
+        columnaPorCodigo[ClasificacionLexica.FIN_ARCHIVO] = totalTerminales;   // la ultima columna es $
+
+        for (int p = 0; p < NUM_PRODUCCIONES; p++) {
+            for (int j = 0; j < cantSimbolosDer[p]; j++) {
+                simbolosDerNum[p][j] = numeroDe(simbolosDer[p][j]);
+            }
+        }
+    }
+
+    /** Numero de un simbolo escrito como texto: BASE_NO_TERMINAL + indice, o su clasificacion lexica. */
+    static int numeroDe(String simbolo) {
+        int nt = indiceNoTerminal(simbolo);
+        if (nt >= 0) {
+            return BASE_NO_TERMINAL + nt;
+        }
+        return ClasificacionLexica.codigoDeTerminal(simbolo);
+    }
+
+    static boolean esNoTerminalNum(int simbolo) {
+        return simbolo >= BASE_NO_TERMINAL;
+    }
+
+    /** Columna de la matriz que le toca a una clasificacion lexica, o -1 si la gramatica no la usa (ej. '/'). */
+    static int columnaDeCodigo(int clasificacion) {
+        if (clasificacion < 0 || clasificacion > ClasificacionLexica.MAX_CODIGO) {
+            return -1;
+        }
+        return columnaPorCodigo[clasificacion];
+    }
+
+    /** Nombre de un simbolo numerico, para las trazas y los mensajes de error. */
+    static String nombreSimbolo(int simbolo) {
+        if (esNoTerminalNum(simbolo)) {
+            return noTerminales[simbolo - BASE_NO_TERMINAL];
+        }
+        int columna = columnaDeCodigo(simbolo);
+        if (columna == totalTerminales) {
+            return "$";
+        }
+        if (columna >= 0) {
+            return terminales[columna];
+        }
+        if (simbolo > 0 && simbolo < 256) {
+            return String.valueOf((char) simbolo);   // caracter unico que la gramatica no usa
+        }
+        return ClasificacionLexica.nombre(simbolo);
+    }
+
     // ------------------------------------------------------------------
     // NUEVO: consultas que usan First, Follow, la matriz y el LLDriver
     // ------------------------------------------------------------------
@@ -272,5 +342,11 @@ public class Gramatica {
         for (int i = 0; i < totalTerminales; i++) {
             System.out.println((i + 1) + ".- " + terminales[i]);
         }
+
+        System.out.println("\n=== 5. Clasificacion lexica (entero) de cada terminal ===");
+        for (int i = 0; i < totalTerminales; i++) {
+            System.out.println((i + 1) + ".- " + terminales[i] + " -> " + codigoTerminal[i]);
+        }
+        System.out.println("$ -> " + ClasificacionLexica.FIN_ARCHIVO);
     }
 }
